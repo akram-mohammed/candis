@@ -2,9 +2,11 @@
 import os
 
 # imports - module imports
-from candis.util import assign_if_none
+from candis.util       import assign_if_none
 from candis.cli.parser import ArgumentParser
-from candis import app
+from candis.config     import CONFIG
+from candis.ios        import Pipeline
+from candis            import app
 
 def main(argv = None):
     '''
@@ -21,11 +23,17 @@ def main(argv = None):
     >>> candis.main() # Launch the Rich Internet Application (RIA)
     '''
     code   = os.EX_OK
-    # parser = ArgumentParser()
-    # args   = parser.parse(argv)
 
-    # Check if argv is None or an emtpy list
+    parser = ArgumentParser(CONFIG.CLI)
+    args   = parser.parse(argv)
+
     if not argv:
         code = app.main()
+    else:
+        if args.cdata:
+            pipe = Pipeline()
+            path = args.cdata
+
+            pipe.run(path)
 
     return code

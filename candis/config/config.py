@@ -25,9 +25,8 @@ class Config(object):
     'candis'
     '''
     def __init__(self, schema = None):
+        # check_mapping(schema)
         self.schema   = assign_if_none(schema, { })
-
-        # check_mutable_mapping(schema)
 
         self.children = [ ]
 
@@ -35,19 +34,22 @@ class Config(object):
 
     def update(self, schema):
         # check_mapping(schema)
-
-        self.schema.update(schema)
+        self.schema.update(dict(schema))
 
         for key, value in self.schema.items():
-            # Assuming (key, value) to be a leaf node.
+            # assuming (key, value) to be a leaf node.
             attr = key.upper()
             aval = value
-            # Check whether a sub-object is of type dict-like.
+            # check whether a sub-object is of type dict-like.
             # if check_mutable_mapping(value, raise_err = False):
             if isinstance(value, collections.Mapping):
-                # Set node name as capitalcase with corresponding value.
-                attr = key.capitalize()
+                # set node name as capitalcase with corresponding value.
+                attr = key if key.isupper() else key.capitalize()
                 aval = Config(value)
+            # check whether a sub-object is of type list-like.
+            if isinstance(value, list):
+                attr = key.upper()
+                aval = [Config(v) if isinstance(v, collections.Mapping) else v for v in value]
 
             self.append(attr, aval)
 
@@ -57,6 +59,14 @@ class Config(object):
         self.children.append(child)
 
         setattr(self, name, value)
+
+    def __getattr__(self, attr):
+        try:
+            value = object.__getattr__(self, attr)
+        except AttributeError:
+            value = None
+
+        return value
 
     def __repr__(self, indent = 2):
         string = pprint.pformat(self.schema, indent = indent)

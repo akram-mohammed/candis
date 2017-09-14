@@ -1,26 +1,52 @@
-var path       = require('path')
-,   webpack    = require('webpack');
+var path           = require('path')
+,   webpack        = require('webpack')
+,   UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 
-var basepath   = path.join(__dirname, 'candis', 'app');
+var paths          = { };
+paths.BASE         = path.join(__dirname, 'candis', 'app');
+paths.APP          = path.join(paths.BASE, 'client', 'app');
 
-module.exports = {
+var config         = require(path.join(paths.APP, 'config'));
+
+module.exports     = {
   entry: [
-    path.join(basepath, 'client', 'app', 'Client.jsx'),
-    path.join(basepath, 'client', 'app', 'plugins.js')
+    path.join(paths.APP, 'Client.jsx'),
+    path.join(paths.APP, 'plugins.js')
   ],
   output: {
-    path: path.join(basepath, 'assets', 'js'),
-    filename: 'bundle.min.js'
+    path: path.join(paths.BASE, 'assets', 'js'),
+    filename: 'bundle.min.js',
+    publicPath: 'http://' + config.host + ':' + config.port
   },
   module: {
     rules: [
       {
-          test: /\.jsx$/,
-        loader: 'babel-loader'
+           test: /\.(js|jsx)$/,
+         loader: 'babel-loader',
+        exclude: /(node_modules)/
       }
     ]
   },
+  plugins: config.debug ? 
+    [
+      // debug plugins go here.
+    ]
+      : 
+    [
+      // production plugins go here.
+      new UglifyJSPlugin({
+        output: {
+          comments: false
+        }
+      })
+    ],
   resolve: {
+    modules: ['node_modules'],
     extensions: ['.js', '.jsx', '.json'],
+  },
+  node: {
+    net: 'empty',
+    tls: 'empty',
+    dns: 'empty'
   }
 };

@@ -1,11 +1,181 @@
 name: &name "candis"
 version: &version "0.1.0"
+debug: &debug true
+pipeline:
+  preprocess:
+    normalization: "quantiles"
+    background_correction: "rma"
+    phenotype_microarray_correction: "pmonly"
+    summary: "medianpolish"
+    folds: 2
+  feature_selection:
+    - use: false
+      search:
+        name: BestFirst
+        options: ['-D', '1', '-N', '5']
+      evaluator: 
+        name: CfsSubsetEval
+    - use: false
+      search:
+        name: GeneticSearch
+        options: ['-Z', '20', '-G', '20', '-C', '0.6', '-M', '0.033', '-R', '20', '-S', '1']
+      evaluator: 
+        name: CfsSubsetEval
+    - use: false
+      search:
+        name: GreedyStepwise
+        options: ['-T', '-1.7976931348623157E308', '-N', '-1']
+      evaluator: 
+        name: CfsSubsetEval
+    - use: false
+      search:
+        name: LinearForwardSelection
+        options: ['-D', '0', '-N', '5', '-I', '-K', '50', '-T', '0']
+      evaluator: 
+        name: CfsSubsetEval
+    - use: false
+      search:
+        name: Ranker
+        options: ['-T', '-1.7976931348623157E308', '-N', '-1']
+      evaluator: 
+        name: ChiSquaredAttributeEval
+    - use: false
+      search:
+        name: BestFirst
+        options: ['-D', '1', '-N', '5']
+      evaluator: 
+        name: ConsistencySubsetEval
+    - use: false
+      search:
+        name: GeneticSearch
+        options: ['-Z', '20', '-G', '20', '-C', '0.6', '-M', '0.033', '-R', '20', '-S', '1']
+      evaluator: 
+        name: ConsistencySubsetEval
+    - use: false
+      search:
+        name: LinearForwardSelection
+        options: ['-D', '0', '-N', '5', '-I', '-K', '50', '-T', '0']
+      evaluator: 
+        name: ConsistencySubsetEval
+    - use: false
+      search:
+        name: Ranker
+        options: ['-T', '-1.7976931348623157E308', '-N', '-1']
+      evaluator: 
+        name: FilteredAttributeEval
+        options: ['-W', 'weka.attributeSelection.InfoGainAttributeEval', '-F', 'weka.filters.supervised.instance.SpreadSubsample', '-M', '0.0', '-X', '0.0', '-S', '1']
+    - use: false
+      search:
+        name: Ranker
+        options: ['-T', '-1.7976931348623157E308', '-N', '-1']
+      evaluator: 
+        name: GainRatioAttributeEval
+    - use: false
+      search:
+        name: Ranker
+        options: ['-T', '-1.7976931348623157E308', '-N', '-1']
+      evaluator: 
+        name: LatentSemanticAnalysis
+        options: 
+    - use: false
+      search:
+        name: Ranker
+        options: ['-T', '-1.7976931348623157E308', '-N', '-1']
+      evaluator: 
+        name: LatentSemanticAnalysis
+        options: ['-R', '0.95', '-A', '5']
+    - use: false
+      search:
+        name: Ranker
+        options: ['-T', '-1.7976931348623157E308', '-N', '-1']
+      evaluator: 
+        name: OneRAttributeEval
+        options: ['-S', '1', '-F', '10', '-B', '6']
+    - use: false
+      search:
+        name: Ranker
+        options: ['-T', '-1.7976931348623157E308', '-N', '-1']
+      evaluator: 
+        name: ReliefFAttributeEval
+        options: ['-M', '-1', '-D', '1', '-K', '10']
+    - use: false
+      search:
+        name: Ranker
+        options: ['-T', '-1.7976931348623157E308', '-N', '-1']
+      evaluator: 
+        name: SymmetricalUncertAttributeEval
+    - use: false
+      search:
+        name: GeneticSearch
+        options: ['-Z', '20', '-G', '20', '-C', '0.6', '-M', '0.033', '-R', '20', '-S', '1']
+      evaluator: 
+        name: WrapperSubsetEval
+        options: ['-B', 'weka.classifiers.rules.ZeroR', '-F', '5', '-T', '0.01', '-R', '1']
+    - use: false
+      search:
+        name: RankSearch
+        options: ['-Z', '20', '-G', '20', '-C', '0.6', '-M', '0.033', '-R', '20', '-S', '1']
+      evaluator: 
+        name: WrapperSubsetEval
+        options: ['-B', 'weka.classifiers.rules.ZeroR', '-F', '5', '-T', '0.01', '-R', '1']
+  model:
+    - use: true
+      name: bayes.NaiveBayes
+      label: Naive Bayes
+    - use: false
+      name: trees.J48
+      label: Decision Tree
+    - use: false
+      name: functions.SMO
+      label: Support Vector Machine
+    - use: false
+      name: lazy.IBk
+      label: k-Nearest Neighbor
+    - use: false
+      name: trees.RandomForest
+      label: Random Forest
+CLI:
+  arguments:
+    - name: ["-d", "--cdata"]
+      help: "path to CDATA file"
+
+    - name: ["-c", "--config"]
+      help: "path to config file"
+
+    - name: ["--arff"]
+      help: "path to generated ARFF file"
 app:
+  debug: *debug
+  host: "0.0.0.0"
+  port: 5000
   lang: "en"
   encoding: "utf-8"
   title: !join [*name, " v", *version]
   color:
     primary: "#E91E63"
+  urls:
+    docs: "https://candis.readthedocs.io"
   routes:
-    base: "/"
+    base: &base "/"
+    assets: &assets !relurljoin [*base, "assets"]
+    images: &images !relurljoin [*assets, "img"]
+    icons: &icons !relurljoin [*images, "icons"]
+
+    signin: !relurljoin [*base, "SignIn"]
+
+    API:
+      data:
+        resource: !relurljoin [*base, "api", "data", "resource"]
+        read: !relurljoin [*base, "api", "data", "read"]
+        write: !relurljoin [*base, "api", "data", "write"]
+      preprocess:
+        methods: !relurljoin [*base, "api", "preprocess", "methods"]
+      featselect:
+        methods: !relurljoin [*base, "api", "featselect", "methods"]
+      model:
+        methods: !relurljoin [*base, "api", "model", "methods"]
+      pipeline:
+        run: !relurljoin [*base, "api", "run"]
+
   container: "app"
+  startdir: "CRES"

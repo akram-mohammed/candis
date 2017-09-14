@@ -1,10 +1,26 @@
 import { createStore, applyMiddleware } from 'redux'
-import thunk  from 'redux-thunk'
-import logger from 'redux-logger'
+import thunk   from 'redux-thunk'
+import logger  from 'redux-logger'
 
-import Reducers from './reducer'
+import config  from './config'
 
-const middleware = applyMiddleware(thunk, logger)
-const Store      = createStore(Reducers, middleware)
+import reducer from './reducer'
 
-export default Store
+// NOTE
+// Adding new middlewares are easy. Simply add a middleware to the 
+// `middlewares` array. In case of middlewares to be used only during
+// development, add a middleware to the array as follows:
+//
+//   config.debug && `<middleware_instance>`
+//
+// SOURCE: github.com/evgenyrodionov/redux-logger/issues/6#issuecomment-132731227
+
+const middlewares = [
+	thunk,
+	config.debug && logger
+].filter(Boolean)
+
+const middleware  = applyMiddleware(...middlewares)
+const store       = createStore(reducer, middleware)
+
+export default store

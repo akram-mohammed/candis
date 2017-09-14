@@ -1,0 +1,22 @@
+[
+  {
+    "name": "cel",
+    "extensions": [".cel", ".CEL"]
+  },
+  {
+    "name": "cdata",
+    "extensions": [".cdata", ".CDATA"]
+  },
+  {
+    "name": "csv",
+    "extensions": [".csv", ".CSV"]
+  },
+  {
+    "name": "pipeline",
+    "extensions": [".cpipe", ".CPIPE"]
+  },
+  {
+    "name": "gist",
+    "extensions": [".cgist", ".CGIST"]
+  }
+]
